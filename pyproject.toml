@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "wol-redirect-proxy"
+version = "0.1.0"
+description = "A simple python Wake-on-LAN proxy"
+authors = []
+license = "MIT"
+readme = "README.md"
+packages = [{include = "wol_redirect_proxy"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.94.1"
+pyyaml = "^6.0"
+uvicorn = "^0.21.0"
+wakeonlan = "^3.0.0"
+ping3 = "^4.0.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

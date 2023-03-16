@@ -1,0 +1,16 @@
+---
+targets:
+- handler: "plain"
+  target_url: "https://google.com"
+  matches:
+  - route: "/seznam"
+- handler: "wol"
+  target_url: "http://loooocalhost:8090"
+  options:
+    mac: "ff:ff:ff:ff:ff"
+    ip: "255.255.255.255"
+    timeout_s: 2
+    iface: "random"
+  matches:
+  - route: "/local-service"
+  - route: "/local-service-alias"
