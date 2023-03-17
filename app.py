@@ -129,7 +129,7 @@ If it's not responding, it sends a magic packet to the target machine
         super().__init__(**kwargs)
         self.description = f"Redirects to <b>{self.kwargs.get('target_url')}</b>\n{WolRedirect.description}"
 
-    async def _handler(self, target_url=None, mac=None, ip=None, iface=None, timeout_s=10, **kwargs):
+    async def _handler(self, target_url=None, mac=None, timeout_s=10, **kwargs):
         async def ping_until(timeout: int):
             start = datetime.now()
             while not (rtt := ping3.ping(host)):
@@ -139,6 +139,7 @@ If it's not responding, it sends a magic packet to the target machine
                 await asyncio.sleep(1)
             return rtt
 
+        timeout_s = int(timeout_s)
         host = str(urlparse(target_url).hostname)
         try:
             log.debug(f"Pinging '{host}' with timeout {timeout_s}s")
@@ -146,7 +147,7 @@ If it's not responding, it sends a magic packet to the target machine
             if first_ping:
                 log.info(f"'{host}' ping successful in {first_ping}ms")
             else:
-                send_magic_packet(mac, ip, interface=iface)
+                send_magic_packet(mac)
                 last_ping = ping_until(timeout_s)
                 log.info(f"Host '{host}' woke up, rtt={last_ping}")
         except (ping3.errors.PingError, TimeoutError) as e:
