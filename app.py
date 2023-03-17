@@ -49,6 +49,7 @@ class Match(BaseModel):
 class ProxyTarget(BaseModel):
     handler: str
     target_url: str
+    methods: List[str] = ["GET", "POST"]
     matches: List[Match]
     options: Dict[str, str] = {}
 
@@ -65,14 +66,15 @@ class Configuration(BaseModel):
 
 class BaseHandler:
 
-    args: Tuple[Any]
+    methods: List[str]
     kwargs: Dict[str, Any]
     required_keys = set()
 
     summary: str = "GENERIC HANDLER"
     description: str = "Generic base class, no implementation..."
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, methods, **kwargs) -> None:
+        self.methods = methods
         missing = []
         for key in self.required_keys:
             if key not in kwargs:
@@ -87,13 +89,14 @@ class BaseHandler:
             "endpoint": self.route_handler,
             "description": self.description,
             "summary": self.summary,
+            "methods": self.methods
         }
 
     async def _handler(self, **kwargs):
         raise NotImplemented
 
     async def route_handler(self, path_in=None):
-        log.info(f"Incomming requst with path: {path_in}")
+        log.info(f"Incoming request with path: {path_in}")
         return await self._handler(path_in=path_in, **self.kwargs)
 
 

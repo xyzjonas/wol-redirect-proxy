@@ -6,6 +6,7 @@ targets:
   - route: "/google-redirect"
 - handler: "wol"
   target_url: "http://192.168.0.183:8096"
+  methods: [GET, POST, DELETE, PATCH]
   options:
     mac: "ff:ff:ff:ff:ff"
     timeout_s: 2
