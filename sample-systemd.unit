@@ -1,0 +1,17 @@
+# Save as /etc/systemd/system/wol-proxy.service
+# sudo systemctl daemon-reload
+# sudo systemctl enable --now wol-proxy
+[Unit]
+Description=Wake-on-LAN proxy
+After=network.target
+
+[Service]
+Type=simple
+User=<username>
+Group=<groupname>
+WorkingDirectory=/opt/wol-redirect-proxy
+ExecStart=/opt/wol-redirect-proxy/venv/bin/python /opt/wol-redirect-proxy/app.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

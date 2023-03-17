@@ -3,14 +3,12 @@ targets:
 - handler: "plain"
   target_url: "https://google.com"
   matches:
-  - route: "/seznam"
+  - route: "/google-redirect"
 - handler: "wol"
-  target_url: "http://loooocalhost:8090"
+  target_url: "http://192.168.0.183:8096"
   options:
     mac: "ff:ff:ff:ff:ff"
-    ip: "255.255.255.255"
     timeout_s: 2
-    iface: "random"
   matches:
-  - route: "/local-service"
-  - route: "/local-service-alias"
+  - route: "/jelly/*"
+

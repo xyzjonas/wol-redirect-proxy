@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import asyncio
+import argparse
 import logging
 import os
+import sys
 from urllib.parse import urlparse
 from enum import Enum
 from typing import Optional, Dict, List, Set, Any, Tuple
@@ -90,8 +92,9 @@ class BaseHandler:
     async def _handler(self, **kwargs):
         raise NotImplemented
 
-    async def route_handler(self):
-        return await self._handler(**self.kwargs)
+    async def route_handler(self, path_in=None):
+        log.info(f"Incomming requst with path: {path_in}")
+        return await self._handler(path_in=path_in, **self.kwargs)
 
 
 @Handlers.register("plain")
@@ -105,8 +108,10 @@ class PlainRedirect(BaseHandler):
         super().__init__(**kwargs)
         self.description = f"{self.description} to <b>{self.kwargs.get('target_url')}</b>"
 
-    async def _handler(self, target_url):
-        return RedirectResponse(target_url)
+    async def _handler(self, target_url, path_in=None):
+        redirect_target = os.path.join(target_url, path_in)
+        log.info(f"Redirecting to '{redirect_target}'")
+        return RedirectResponse(redirect_target)
 
 
 @Handlers.register("wol")
@@ -118,13 +123,13 @@ A simple WoL redirect. It tries to ping the target url before redirecting.
 If it's not responding, it sends a magic packet to the target machine
 , and then again waits for the host to become reachable.
 """
-    required_keys = {"target_url", "mac", "ip", "iface"}
+    required_keys = {"target_url", "mac"}
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.description = f"Redirects to <b>{self.kwargs.get('target_url')}</b>\n{WolRedirect.description}"
 
-    async def _handler(self, target_url=None, mac=None, ip=None, iface=None, timeout_s=10):
+    async def _handler(self, target_url=None, mac=None, ip=None, iface=None, timeout_s=10, **kwargs):
         async def ping_until(timeout: int):
             start = datetime.now()
             while not (rtt := ping3.ping(host)):
@@ -137,7 +142,7 @@ If it's not responding, it sends a magic packet to the target machine
         host = str(urlparse(target_url).hostname)
         try:
             log.debug(f"Pinging '{host}' with timeout {timeout_s}s")
-            first_ping = ping3.ping(host, unit="ms")
+            first_ping = ping3.ping(host, unit="ms", timeout=timeout_s)
             if first_ping:
                 log.info(f"'{host}' ping successful in {first_ping}ms")
             else:
@@ -148,7 +153,7 @@ If it's not responding, it sends a magic packet to the target machine
             log.error("Ping failed", e)
             raise HTTPException(status_code=504, detail=f"Ping failed: {e}")
 
-        return await super()._handler(target_url)
+        return await super()._handler(target_url, **kwargs)
 
 
 def set_default_paths(app: FastAPI):
@@ -162,7 +167,7 @@ def set_default_paths(app: FastAPI):
 
 def create_app(configuration: Configuration = None):
     if not configuration:
-        with open(os.environ.get("CONFIGURATION", "./example-config.yaml"), "r") as config:
+        with open(os.environ.get("WOL-PROXY-CONFIG", "./config.yaml"), "r") as config:
             configuration = Configuration(**yaml.safe_load(config))
 
     app = FastAPI()
@@ -175,6 +180,10 @@ def create_app(configuration: Configuration = None):
             for k, v in options.items():
                 target_cfg[k] = v
             handler_name = target_cfg.pop("handler")
+
+            if match.route.endswith("/*"):
+                match.route = match.route.replace("/*", "/{path_in:path}")
+
             handler: BaseHandler = Handlers.available[handler_name](**target_cfg)
             app.add_api_route(match.route, **handler.add_api_route_kwargs)
 
@@ -182,4 +191,10 @@ def create_app(configuration: Configuration = None):
 
 
 if __name__ == '__main__':
-    uvicorn.run(create_app(), port=8080)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=8080)
+    args = parser.parse_args()
+
+    uvicorn.run(create_app(), host=args.host, port=args.port)
