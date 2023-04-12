@@ -27,7 +27,7 @@ $ ./app.py --host "0.0.0.0" --port 12345
 ```
 ...or 
 
-## Use as a sytemd service
+## Use as a systemd service
 
 1. clone
 ```shell
