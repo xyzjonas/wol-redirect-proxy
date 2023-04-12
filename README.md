@@ -25,4 +25,30 @@ targets:
 ```shell
 $ ./app.py --host "0.0.0.0" --port 12345
 ```
-...or use the attached systemd unit file
+...or 
+
+## Use as a sytemd service
+
+1. clone
+```shell
+git clone https://github.com/jonasbrauer/wol-redirect-proxy.git && cd wol-redirect-proxy
+```
+
+2. edit your configuration
+```shell
+cp example-config.yaml config.yaml
+```
+
+3. setup your virtualenv
+```shell
+python3.9 -m venv venv
+./venv/bin/pip install -r requirements.txt
+```
+
+4. create & start the systemd service
+```shell
+sudo cp sample-systemd.unit /etc/systemd/system/wol-redirect-proxy.service  # ...and edit user/group
+sudo systemctl daemon-reload
+sudo systemctl enable --now wol-redirect-proxy.service
+sudo systemctl status wol-redirect-proxy.service
+```
