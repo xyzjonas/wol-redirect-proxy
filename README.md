@@ -41,8 +41,9 @@ cp example-config.yaml config.yaml
 
 3. setup your virtualenv
 ```shell
-python3.9 -m venv venv
-./venv/bin/pip install -r requirements.txt
+$ python3.9 -m venv .
+$ source ./bin/activate
+$ (wol-redirect-proxy) pip install -r requirements.txt
 ```
 
 4. create & start the systemd service
