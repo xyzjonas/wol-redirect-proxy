@@ -1,15 +1,17 @@
 ---
 targets:
-- handler: "plain"
-  target_url: "https://google.com"
-  matches:
-  - route: "/google-redirect"
 - handler: "wol"
-  target_url: "http://192.168.0.183:8096"
+  source_url: "http://foo.bar.baz/*"
+  target_url: "http://my-server-1.home:9090"
   methods: [GET, POST, DELETE, PATCH]
   options:
-    mac: "ff:ff:ff:ff:ff"
-    timeout_s: 2
-  matches:
-  - route: "/jelly/*"
+    mac: "00:1e:a5:1a:9d:11"
+    timeout_s: 1
 
+- handler: "plain"
+  source_url: "http://another.hostname/with/a/specific/path"
+  target_url: "https://google.com"
+  methods: [GET]
+  options:
+    mac: "00:1e:a5:1a:9d:11"
+    timeout_s: 2

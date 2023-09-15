@@ -1,11 +1,15 @@
 [tool.poetry]
 name = "wol-redirect-proxy"
-version = "0.1.0"
+version = "1.0.1"
 description = "A simple python Wake-on-LAN proxy"
 authors = []
 license = "MIT"
 readme = "README.md"
-packages = [{include = "wol_redirect_proxy"}]
+packages = [{include = "wol_proxy", from="src"}]
+
+[tool.poetry.scripts]
+wol-proxy = "wol_proxy.app:main"
+
 
 [tool.poetry.dependencies]
 python = "^3.8"
